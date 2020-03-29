@@ -3,14 +3,14 @@ const config = require('./credential.json');
 
 (async () => {
     let browser;
-    if (config.chromiumPath){    
+    if (config.chromiumPath && config.chromiumPath !== '') {    
         console.log('Custom chromium path found');
         browser = await puppeteer.launch({
             executablePath: config.chromiumPath,
             headless: config.headless,
             slowMo: 30 // slow down by 30 ms
         });
-    }else{
+    } else {
         console.log('Opening with default chromium path');
         browser = await puppeteer.launch({
             headless: config.headless,
