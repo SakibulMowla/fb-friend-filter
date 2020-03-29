@@ -53,7 +53,7 @@ const sleep = (ms = 1000) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function autoScroll(page){
+async function autoScroll(page) {
     await page.evaluate(async () => {
         await new Promise((resolve, reject) => {
             let totalHeight = 0;
