@@ -1,11 +1,27 @@
 require('console-stamp')(console, { pattern: 'dd/mm/yyyy HH:MM:ss.l' });
-
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 const config = require('./credential.json');
 
 (async () => {
+
     console.log("Starting Execution...");
+
+    let profileData = {};
+    const profileFilePath = `friend_${config.username}.json`;
+
+    try {
+        if (fs.existsSync(profileFilePath)) {
+          //file exists
+          console.log('Reading From Existing File.');
+          let rawdata = fs.readFileSync(profileFilePath);
+          profileData = JSON.parse(rawdata);
+        }else{
+            console.log('No Existing File Found');
+        }
+      } catch(err) {
+        console.error(err);
+      }
 
     let browser;
     if (config.chromiumPath && config.chromiumPath !== '') {    
@@ -45,36 +61,55 @@ const config = require('./credential.json');
     // click on Log In
     await page.click('[value="Log In"]');
 
-    await sleep(10000);
-
+   // await sleep(10000);
     console.log('Login Done!!!');
+
+    await page.waitForSelector("[href='/me/']",{visiable: true});
 
     // goto friend list
     await page.goto('https://www.facebook.com/me/friends');
 
     await sleep(3000);
 
-    await autoScroll(page);
+    if(!profileData.all_profile_found) {
 
-    console.log('Starting to fetch allHrefs');
+        const startDate = new Date();
 
-    const allHrefs = await page.$$eval('a', anchors => anchors.map(anchor => anchor.href));
-    const ownerIdName = getOwnerIdName(page.url());
+        // Do your operations
+        await autoScroll(page);
 
-    console.log('allHrefs length:', allHrefs.length);
+        const endDate   = new Date();
 
-    const friendProfileHrefs = filterValidFriendProfileHrefs(allHrefs, ownerIdName);
+        const seconds = (endDate.getTime() - startDate.getTime()) / 1000;
 
-    console.log('friendProfileHrefs length:', friendProfileHrefs.length);
-    console.log(JSON.stringify(friendProfileHrefs, null, 4));
+        console.log('Starting to fetch allHrefs');
 
-    // writing friend profile links to a file
-    const jsonProfileLinks = {
-        profiles: friendProfileHrefs
-    };
+        const allHrefs = await page.$$eval('a', anchors => anchors.map(anchor => anchor.href));
+        const ownerIdName = getOwnerIdName(page.url());
 
-    fs.writeFileSync('friend-profiles.json', JSON.stringify(jsonProfileLinks, null, 4));
+        console.log('allHrefs length:', allHrefs.length);
 
+        const friendProfileHrefs = filterValidFriendProfileHrefs(allHrefs, ownerIdName);
+
+        // writing friend profile links to a file
+        if(friendProfileHrefs && friendProfileHrefs.length>0) 
+            profileData.all_profile_found = true;
+        else
+            profileData.all_profile_found = false;
+
+        profileData.profile_search_time_is_sec = seconds;
+        profileData.profiles = friendProfileHrefs;
+      
+        console.log('Writig to file start');
+
+        fs.writeFileSync(profileFilePath, JSON.stringify(profileData, null, 4));
+
+        console.log('Writig to file end');
+
+    }else{
+        console.log('All friend profile link retrieved already');
+    }
+    
     await browser.close();
 
     console.log("Ending Execution.");
@@ -124,7 +159,8 @@ const filterValidFriendProfileHrefs = (allHrefs, ownerIdName) => {
             'find-friends',
             'notes',
             'permalink',
-            '?'
+            '?',
+            'stories'
         ];
 
         const matchesHref = feature => href.includes('/' + feature);
@@ -151,7 +187,7 @@ async function autoScroll(page) {
         await page.evaluate(async () => {
             await new Promise((resolve, reject) => {
                 let totalHeight = 0;
-                let distance = 400;
+                let distance = 350;
                 let timer = setInterval(() => {
                     let scrollHeight = document.body.scrollHeight;
                     window.scrollBy(0, distance);
