@@ -16,6 +16,7 @@ module.exports = {
   },
   rules: {
     "no-console": "off",
-    "indent": ["error", 4]
+    "indent": ["error", 4],
+    "comma-dangle": ["error", "never"]
   },
 };

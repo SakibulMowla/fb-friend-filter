@@ -46,7 +46,7 @@ const filterValidFriendProfileHrefs = (allHrefs, ownerIdName) => {
             'settings',
             'stories',
             'videos',
-            'watch',
+            'watch'
         ];
 
         const matchesHref = (feature) => href.includes(`/${feature}`);
@@ -116,13 +116,13 @@ async function autoScroll(page) {
         browser = await puppeteer.launch({
             executablePath: config.chromiumPath,
             headless: config.headless,
-            slowMo: 0, // slow down by 30 ms
+            slowMo: 0 // slow down by 30 ms
         });
     } else {
         console.log('Opening with default chromium path');
         browser = await puppeteer.launch({
             headless: config.headless,
-            slowMo: 0, // slow down by 30 ms
+            slowMo: 0 // slow down by 30 ms
         });
     }
 
@@ -134,7 +134,7 @@ async function autoScroll(page) {
     await page.setViewport({
         width: 1500,
         height: 1000,
-        deviceScaleFactor: 1,
+        deviceScaleFactor: 1
     });
 
     // enter email address
