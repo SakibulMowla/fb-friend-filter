@@ -116,6 +116,7 @@ const filterValidFriendProfileHrefs = (allHrefs, ownerIdName) => {
             'profile',
             'find-friends',
             'notes',
+            'permalink',
             '?'
         ];
 
