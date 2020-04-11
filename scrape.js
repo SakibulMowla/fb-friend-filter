@@ -11,17 +11,17 @@ const getOwnerIdName = (url) => {
     return ownerIdName;
 };
 
-const filterValidFriendProfileHrefs = (allHrefs, ownerIdName) => {
+const filterValidFriendProfileHrefs =(allHrefs, ownerIdName) => {
     console.log('Starting filterValidFriendProfileHrefs...');
 
     const uniqueFriendProfileHrefs = new Set();
 
     const validLink = (href) => !!href;
     const isMutualFriendPage = (href) => href.includes('friends_mutual');
-    const isHomePage = (href) => href === 'https://www.facebook.com/';
+    const isHomePage = (href) => href ==='https://www.facebook.com/';
     const isOwnerRelatedPage = (href) => href.includes(ownerIdName);
     const isFeaturePage = (href) => {
-        const features = [
+        const features =  [
             '?',
             'bookmarks',
             'donate',
@@ -46,7 +46,7 @@ const filterValidFriendProfileHrefs = (allHrefs, ownerIdName) => {
             'settings',
             'stories',
             'videos',
-            'watch'
+            'watch',
         ];
 
         const matchesHref = (feature) => href.includes(`/${feature}`);
@@ -106,7 +106,7 @@ async function autoScroll(page) {
         } else {
             console.log('No Existing File Found!!!');
         }
-    } catch (err) {
+    } catch(err) {
         console.error(err);
     }
 
@@ -161,7 +161,7 @@ async function autoScroll(page) {
 
     await sleep(3000);
 
-    if (!profileData.allProfileFound) {
+    if(!profileData.allProfileFound) {
         const startDate = new Date();
 
         // Do your operations
@@ -173,7 +173,7 @@ async function autoScroll(page) {
 
         console.log('Starting to fetch allHrefs');
 
-        const allHrefs = await page.$$eval('a', (anchors) => anchors.map((anchor) => anchor.href));
+        let allHrefs = await page.$$eval('a', (anchors) => anchors.map((anchor) => anchor.href));
         const ownerIdName = getOwnerIdName(page.url());
 
         console.log('allHrefs length:', allHrefs.length);
@@ -195,7 +195,7 @@ async function autoScroll(page) {
         fs.writeFileSync(profileFilePath, JSON.stringify(profileData, null, 4));
 
         console.log('Writig to file end');
-    } else {
+    } else { 
         console.log('All friend profile link retrieved already');
     }
 
