@@ -12,16 +12,16 @@ const config = require('./credential.json');
 
     try {
         if (fs.existsSync(profileFilePath)) {
-          //file exists
-          console.log('Reading From Existing File.');
-          let rawdata = fs.readFileSync(profileFilePath);
-          profileData = JSON.parse(rawdata);
-        }else{
-            console.log('No Existing File Found');
+            //file exists
+            console.log('Reading From Existing File.');
+            let rawdata = fs.readFileSync(profileFilePath);
+            profileData = JSON.parse(rawdata);
+        } else {
+            console.log('No Existing File Found!!!');
         }
-      } catch(err) {
+    } catch (err) {
         console.error(err);
-      }
+    }
 
     let browser;
     if (config.chromiumPath && config.chromiumPath !== '') {    
@@ -71,14 +71,14 @@ const config = require('./credential.json');
 
     await sleep(3000);
 
-    if(!profileData.all_profile_found) {
+    if (!profileData.allProfileFound) {
 
         const startDate = new Date();
 
         // Do your operations
         await autoScroll(page);
 
-        const endDate   = new Date();
+        const endDate = new Date();
 
         const seconds = (endDate.getTime() - startDate.getTime()) / 1000;
 
@@ -92,12 +92,13 @@ const config = require('./credential.json');
         const friendProfileHrefs = filterValidFriendProfileHrefs(allHrefs, ownerIdName);
 
         // writing friend profile links to a file
-        if(friendProfileHrefs && friendProfileHrefs.length>0) 
-            profileData.all_profile_found = true;
-        else
-            profileData.all_profile_found = false;
+        if (friendProfileHrefs && friendProfileHrefs.length > 0) {
+            profileData.allProfileFound = true;
+        } else {
+            profileData.allProfileFound = false;
+        }
 
-        profileData.profile_search_time_is_sec = seconds;
+        profileData.profileLinkSearchTime = seconds;
         profileData.profiles = friendProfileHrefs;
       
         console.log('Writig to file start');
@@ -106,10 +107,10 @@ const config = require('./credential.json');
 
         console.log('Writig to file end');
 
-    }else{
+    } else {
         console.log('All friend profile link retrieved already');
     }
-    
+
     await browser.close();
 
     console.log("Ending Execution.");
@@ -136,6 +137,7 @@ const filterValidFriendProfileHrefs = (allHrefs, ownerIdName) => {
     const isOwnerRelatedPage = href => href.includes(ownerIdName);
     const isFeaturePage = (href) => {
         const features = [ 
+            'me/',
             'watch',
             'marketplace',
             'groups',
