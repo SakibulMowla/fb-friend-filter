@@ -165,9 +165,9 @@ async function autoScroll(page) {
     if (!profileData.allProfileFound) {
         const spanTexts = await page.$$eval('span', spans => spans.map(span => span.textContent ));
         const probableFriendNumbers = spanTexts.filter((text) => text && _.toNumber(text)>20 && _.toNumber(text) < 10000);
-        const friendCounts = parseInt(_.max(probableFriendNumbers));
+        const friendCount = parseInt(_.max(probableFriendNumbers));
 
-        console.log('Friend Counts: '+friendCounts);
+        console.log('Friend Counts: '+friendCount);
 
         const startDate = new Date();
 
@@ -187,7 +187,7 @@ async function autoScroll(page) {
 
         const friendProfileHrefs = filterValidFriendProfileHrefs(allHrefs, ownerIdName);
 
-        const ratio = Math.min(friendCounts, friendProfileHrefs.length) / Math.max(friendCounts, friendProfileHrefs.length);
+        const ratio = Math.min(friendCount, friendProfileHrefs.length) / Math.max(friendCount, friendProfileHrefs.length);
 
         console.log('Friend Profile Links Count: '+friendProfileHrefs.length);
 
@@ -201,8 +201,8 @@ async function autoScroll(page) {
         }
 
         profileData.friendLinkRetrievalRatio = ratio;
-        profileData.friendCounts = friendCounts;
-        profileData.probableFriendLinkCounts = friendProfileHrefs.length;
+        profileData.friendCount = friendCount;
+        profileData.probableFriendLinkCount = friendProfileHrefs.length;
         profileData.profileLinkSearchTime = seconds;
         profileData.profiles = friendProfileHrefs;
 
