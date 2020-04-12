@@ -1,8 +1,8 @@
 require('console-stamp')(console, { pattern: 'dd/mm/yyyy HH:MM:ss.l' });
 const fs = require('fs');
 const puppeteer = require('puppeteer');
-const config = require('./credential.json');
 const _ = require('lodash');
+const config = require('./credential.json');
 
 const sleep = (ms = 1000) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -163,11 +163,11 @@ async function autoScroll(page) {
     await sleep(3000);
 
     if (!profileData.allProfileFound) {
-        const spanTexts = await page.$$eval('span', spans => spans.map(span => span.textContent ));
-        const probableFriendNumbers = spanTexts.filter((text) => text && _.toNumber(text)>20 && _.toNumber(text) < 10000);
-        const friendCount = parseInt(_.max(probableFriendNumbers));
+        const spanTexts = await page.$$eval('span', (spans) => spans.map((span) => span.textContent));
+        const probableFriendNumbers = spanTexts.filter((text) => text && _.toNumber(text) > 20 && _.toNumber(text) < 10000);
+        const friendCount = parseInt(_.max(probableFriendNumbers), 10);
 
-        console.log('Friend Counts: '+friendCount);
+        console.log(`Friend Counts: ${friendCount}`);
 
         const startDate = new Date();
 
@@ -189,9 +189,9 @@ async function autoScroll(page) {
 
         const ratio = Math.min(friendCount, friendProfileHrefs.length) / Math.max(friendCount, friendProfileHrefs.length);
 
-        console.log('Friend Profile Links Count: '+friendProfileHrefs.length);
+        console.log(`Friend Profile Links Count: ${friendProfileHrefs.length}`);
 
-        console.log('Friend Profile Retrieval Ratio: '+ratio);
+        console.log(`Friend Profile Retrieval Ratio: ${ratio}`);
 
         // writing friend profile links to a file
         if (ratio && ratio > 0.85) {
