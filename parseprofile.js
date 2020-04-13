@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const config = require('./credential.json');
 
 const filePath = `./friend_${config.username}.json`;
+// eslint-disable-next-line import/no-dynamic-require
 const friends = require(filePath);
 
 const sleep = (ms = 1000) => new Promise((resolve) => setTimeout(resolve, ms));
