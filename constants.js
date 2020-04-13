@@ -29,6 +29,33 @@ const familyMemberCategories = [
     'Brother-in-law'
 ];
 
+const featuresToExclude = [
+    '?',
+    'bookmarks',
+    'donate',
+    'events',
+    'find-friends',
+    'friends',
+    'gaming',
+    'groups',
+    'groupslanding',
+    'marketplace',
+    'me/',
+    'memories',
+    'messages',
+    'mutual_friends',
+    'notes',
+    'notifications',
+    'pages',
+    'permalink',
+    'photo',
+    'posts',
+    'settings',
+    'stories',
+    'videos',
+    'watch'
+];
+
 const profileFeatures = [
     'about_overview',
     'about_work_and_education',
@@ -50,5 +77,6 @@ const titleToExclude = [
 
 exports.DefaultInfo = defaultInfo;
 exports.FamilyMemberCategories = familyMemberCategories;
+exports.FeaturesToExclude = featuresToExclude;
 exports.ProfileFeatures = profileFeatures;
 exports.TitleToExclude = titleToExclude;
