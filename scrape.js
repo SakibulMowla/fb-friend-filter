@@ -1,7 +1,9 @@
 require('console-stamp')(console, { pattern: 'dd/mm/yyyy HH:MM:ss.l' });
+
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 const _ = require('lodash');
+
 const config = require('./credential.json');
 
 const sleep = (ms = 1000) => new Promise((resolve) => setTimeout(resolve, ms));
