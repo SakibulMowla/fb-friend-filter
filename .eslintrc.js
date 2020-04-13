@@ -20,6 +20,6 @@ module.exports = {
     "comma-dangle": ["error", "never"],
     "max-len": [2, {"code": 150, "tabWidth": 4, "ignoreUrls": true}],
     "prefer-destructuring": ["error", {"object": false, "array": false}],
-    "allowForLoopAfterthoughts": true
+    'no-plusplus': [2, { allowForLoopAfterthoughts: true }]
   },
 };
