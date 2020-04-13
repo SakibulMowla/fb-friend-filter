@@ -83,7 +83,20 @@ const parseInfo = (profileURL, spanTexts, titles) => {
                 info.currentLocation = spanTexts[i - 1];
             } else if (spanTexts[i] == "Hometown") {
                 info.homeLocation = spanTexts[i - 1];
-            }
+            }else if (spanTexts[i].includes('Studies ')
+                    || spanTexts[i].includes('Studied ')) {
+                info.institutions.push(spanTexts[i].split(' at ')[1]);
+            } else if (spanTexts[i].includes('Went to ')) {
+                info.institutions.push(spanTexts[i].split('Went to ')[1]);
+            } else if (spanTexts[i].includes('Lives in ')) {
+                info.currentLocation = spanTexts[i].split('Lives in ')[1];
+            } else if (spanTexts[i].includes('Joined ')) {
+                info.joined = spanTexts[i].split('Joined ')[1];
+            } else if (spanTexts[i].includes(' mutual friends')) {
+                info.mutualFriends = parseInt(spanTexts[i], 10);
+            } else if (spanTexts[i].includes('Followed by ')) {
+                info.followers = parseCommaSeparatedNumber(spanTexts[i].split(' ')[2]);
+            } 
         }
         info.familyMember = [...familyMembers];
         info.mobile = [...mobiles];
