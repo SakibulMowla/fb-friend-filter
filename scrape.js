@@ -40,7 +40,8 @@ const filterValidFriendProfileHrefs = (allHrefs, ownerIdName) => {
         }
     });
 
-    return [...uniqueFriendProfileHrefs];
+    return [...uniqueFriendProfileHrefs].filter((link) => !(link.includes('?viewas=')
+    || link.charAt(link.length - 1) === '/'));
 };
 
 async function autoScroll(page) {
@@ -162,9 +163,7 @@ async function autoScroll(page) {
 
         console.log('allHrefs length:', allHrefs.length);
 
-        let friendProfileHrefs = filterValidFriendProfileHrefs(allHrefs, ownerIdName);
-
-        friendProfileHrefs = friendProfileHrefs.filter((link) => !(link.includes('?viewas=') || link.charAt(link.length - 1) === '/'));
+        const friendProfileHrefs = filterValidFriendProfileHrefs(allHrefs, ownerIdName);
 
         const ratio = Math.min(friendCount, friendProfileHrefs.length) / Math.max(friendCount, friendProfileHrefs.length);
 
