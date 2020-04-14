@@ -157,11 +157,14 @@ async function autoScroll(page) {
         console.log('Starting to fetch allHrefs');
 
         const allHrefs = await page.$$eval('a', (anchors) => anchors.map((anchor) => anchor.href));
+
         const ownerIdName = getOwnerIdName(page.url());
 
         console.log('allHrefs length:', allHrefs.length);
 
-        const friendProfileHrefs = filterValidFriendProfileHrefs(allHrefs, ownerIdName);
+        let friendProfileHrefs = filterValidFriendProfileHrefs(allHrefs, ownerIdName);
+
+        friendProfileHrefs = friendProfileHrefs.filter((link) => !(link.includes('?viewas=') || link.charAt(link.length - 1) === '/'));
 
         const ratio = Math.min(friendCount, friendProfileHrefs.length) / Math.max(friendCount, friendProfileHrefs.length);
 
