@@ -31,6 +31,15 @@ const parseMarriageInfo = (text) => {
     };
 };
 
+const getHandle = (profileURL) => {
+    if (profileURL.includes('profile.php?id=')) {
+        let handle = profileURL.split('profile.php?id=')[1];
+        handle = handle.split('&')[0];
+        return handle;
+    }
+    return profileURL.split('https://www.facebook.com/')[1];
+};
+
 const parseInfo = (profileURL, spanTexts, titles) => {
     console.log('Parsing Info');
     console.log('Profile URL', profileURL);
@@ -42,7 +51,7 @@ const parseInfo = (profileURL, spanTexts, titles) => {
 
     // doing deep-copy otherwise all info element will be same due to reference
     const info = JSON.parse(JSON.stringify(Constants.DEFAULT_INFO));
-    info.handle = profileURL.split('https://www.facebook.com/')[1];
+    info.handle = getHandle(profileURL);
 
     const familyMembers = new Set();
     const mobiles = new Set();
@@ -133,48 +142,85 @@ const immediateSecondOcurranceWordRemove = async (items) => {
 const browseProfiles = async (page) => {
     const knowledgebaseFilePath = `knowledgebase_${config.username}.json`;
 
-    const infos = [];
+    let knowledgeInfo = {
+        totalProfile: 0,
+        retrieveProfile: 0,
+        retrieveProfilePercent: 0.0,
+        profileInfos: {}
+    };
+
+    try {
+        if (fs.existsSync(knowledgebaseFilePath)) {
+            // file exists
+            console.log('Reading From Existing File.');
+            const rawdata = fs.readFileSync(knowledgebaseFilePath);
+            knowledgeInfo = JSON.parse(rawdata);
+        } else {
+            console.log('No Existing File Found!!!');
+        }
+    } catch (err) {
+        console.error(err);
+    }
+
+    console.log(JSON.stringify({ knowledgeInfo }, null, 4));
+
     const length = friends.profiles.length;
 
     const profileFeatures = Constants.PROFILE_FEATURES;
 
     try {
-        for (let i = 0; i < friends.profiles.length; i++) {
+        knowledgeInfo.totalProfile = length;
+
+        for (let i = 0; i < length; i++) {
             const profileLink = friends.profiles[i];
-            console.info(` [${pad(i + 1, 4)} / ${pad(length, 4, false)} ] Going to ${friends.profiles[i]}`);
-            let spanInfos = [];
-            let h1Infos = [];
+            const handle = getHandle(profileLink);
 
-            await page.goto(profileLink);
-            await sleep(3000);
-            let spanTexts = await page.$$eval('span', (spans) => spans.map((span) => span.textContent).filter((text) => text));
-            spanInfos = spanInfos.concat(spanTexts);
+            if (!(handle in knowledgeInfo.profileInfos) || knowledgeInfo.profileInfos[handle].override === true) {
+                console.info(` [${pad(i + 1, 4)} / ${pad(length, 4, false)} ] Going to ${friends.profiles[i]}`);
+                let spanInfos = [];
+                let h1Infos = [];
 
-            for (let f = 0; f < profileFeatures.length; f++) {
-                console.log('Feature page: ', profileFeatures[f]);
-                if (profileLink.includes('profile.php?')) {
-                    await page.goto(`${profileLink}&sk=${profileFeatures[f]}`);
-                } else {
-                    await page.goto(`${profileLink}/${profileFeatures[f]}`);
-                }
-                await sleep(3000);
-                spanTexts = await page.$$eval('span', (spans) => spans.map((span) => span.textContent).filter((text) => text));
+                await page.goto(profileLink, Constants.PAGE_LOADING_STYLE);
+                // await sleep(3000);
+
+                let spanTexts = await page.$$eval('span', (spans) => spans.map((span) => span.textContent).filter((text) => text));
                 spanInfos = spanInfos.concat(spanTexts);
+
+                for (let f = 0; f < profileFeatures.length; f++) {
+                    console.log('Feature page: ', profileFeatures[f]);
+                    if (profileLink.includes('profile.php?')) {
+                        await page.goto(`${profileLink}&sk=${profileFeatures[f]}`, Constants.PAGE_LOADING_STYLE);
+                    } else {
+                        await page.goto(`${profileLink}/${profileFeatures[f]}`, Constants.PAGE_LOADING_STYLE);
+                    }
+                    // await sleep(3000);
+
+                    spanTexts = await page.$$eval('span', (spans) => spans.map((span) => span.textContent).filter((text) => text));
+                    spanInfos = spanInfos.concat(spanTexts);
+                }
+
+                const h1Texts = await page.$$eval('h1', (h1Tags) => h1Tags.map((h1) => h1.textContent).filter((text) => text));
+                h1Infos = h1Infos.concat(h1Texts);
+
+                spanInfos = await immediateSecondOcurranceWordRemove(spanInfos);
+
+                if (!(handle in knowledgeInfo.profileInfos)) {
+                    knowledgeInfo.retrieveProfile += 1;
+                    const retrievePercent = (knowledgeInfo.retrieveProfile / knowledgeInfo.totalProfile) * 100.0;
+                    knowledgeInfo.retrieveProfilePercent = retrievePercent.toFixed(2);
+                } else {
+                    console.info(`Information overriding for handle : ${handle}`);
+                }
+
+                knowledgeInfo.profileInfos[handle] = parseInfo(profileLink, spanInfos, h1Infos);
+                fs.writeFileSync(knowledgebaseFilePath, JSON.stringify(knowledgeInfo, null, 4));
+            } else {
+                console.info(`Already have info using handle : ${handle}, Ignoring this handle...`);
             }
-
-            const h1Texts = await page.$$eval('h1', (h1Tags) => h1Tags.map((h1) => h1.textContent).filter((text) => text));
-            h1Infos = h1Infos.concat(h1Texts);
-
-            spanInfos = await immediateSecondOcurranceWordRemove(spanInfos);
-            infos.push(parseInfo(profileLink, spanInfos, h1Infos));
-
-            fs.writeFileSync(knowledgebaseFilePath, JSON.stringify({ infos }, null, 4));
         }
     } catch (reason) {
         console.error(reason);
     }
-
-    fs.writeFileSync(knowledgebaseFilePath, JSON.stringify({ infos }, null, 4));
 };
 
 (async () => {
@@ -198,13 +244,12 @@ const browseProfiles = async (page) => {
     context.overridePermissions('https://www.facebook.com', ['notifications']);
 
     const page = await browser.newPage();
-    await page.goto('https://facebook.com');
+    await page.goto('https://facebook.com', Constants.PAGE_LOADING_STYLE);
     await page.setViewport({
         width: 1500,
         height: 1000,
         deviceScaleFactor: 1
     });
-
     // enter email address
     await page.click('[id="email"]');
     await page.keyboard.type(config.username, {
