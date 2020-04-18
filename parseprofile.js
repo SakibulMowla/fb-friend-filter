@@ -143,9 +143,9 @@ const browseProfiles = async (page) => {
     const knowledgebaseFilePath = `knowledgebase_${config.username}.json`;
 
     let knowledgeInfo = {
-        totalProfile: 0,
-        retrieveProfile: 0,
-        retrieveProfilePercent: 0.0,
+        totalProfiles: 0,
+        retrievedProfiles: 0,
+        retrievedProfilesPercent: 0.0,
         profileInfos: {}
     };
 
@@ -162,14 +162,12 @@ const browseProfiles = async (page) => {
         console.error(err);
     }
 
-    console.log(JSON.stringify({ knowledgeInfo }, null, 4));
-
     const length = friends.profiles.length;
 
     const profileFeatures = Constants.PROFILE_FEATURES;
 
     try {
-        knowledgeInfo.totalProfile = length;
+        knowledgeInfo.totalProfiles = length;
 
         for (let i = 0; i < length; i++) {
             const profileLink = friends.profiles[i];
@@ -205,9 +203,9 @@ const browseProfiles = async (page) => {
                 spanInfos = await immediateSecondOcurranceWordRemove(spanInfos);
 
                 if (!(handle in knowledgeInfo.profileInfos)) {
-                    knowledgeInfo.retrieveProfile += 1;
-                    const retrievePercent = (knowledgeInfo.retrieveProfile / knowledgeInfo.totalProfile) * 100.0;
-                    knowledgeInfo.retrieveProfilePercent = retrievePercent.toFixed(2);
+                    knowledgeInfo.retrievedProfiles += 1;
+                    const retrievePercent = (knowledgeInfo.retrievedProfiles / knowledgeInfo.totalProfiles) * 100.0;
+                    knowledgeInfo.retrievedProfilesPercent = retrievePercent.toFixed(2);
                 } else {
                     console.info(`Information overriding for handle : ${handle}`);
                 }
