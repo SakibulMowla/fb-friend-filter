@@ -12,6 +12,8 @@ const friends = require(`./friend_${config.username}.json`);
 
 const sleep = (ms = 1000) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const basicFilter = (dataTexts) => dataTexts.map((text) => text && text.trim()).filter((text) => text.length > 3);
+
 const parseCommaSeparatedNumber = (numberString) => {
     const splitted = numberString.split(',');
     let result = '';
@@ -41,12 +43,15 @@ const getHandle = (profileURL) => {
 };
 
 const parseInfo = (profileURL, spanTexts, titles) => {
+    spanTexts = basicFilter(spanTexts);
+    titles = basicFilter(titles);
+
     console.log('Parsing Info');
     console.log('Profile URL', profileURL);
     console.log('Span text counts ', spanTexts.length);
     console.log('Title counts ', titles.length);
 
-    console.info('spnatexts', JSON.stringify(spanTexts, null, 4));
+    console.info('spantexts', JSON.stringify(spanTexts, null, 4));
     console.info('titles', JSON.stringify(titles, null, 4));
 
     // doing deep-copy otherwise all info element will be same due to reference
@@ -69,6 +74,8 @@ const parseInfo = (profileURL, spanTexts, titles) => {
                 info.birthYear = spanTexts[i - 1];
             } else if (spanTexts[i] === 'Birth Date' || spanTexts[i] === 'Birthday') {
                 info.birthDate = spanTexts[i - 1];
+            } else if (spanTexts[i].includes('Birthday:')) {
+                info.birthDate = spanTexts[i].split('Birthday:')[1];
             } else if (spanTexts[i] === 'Gender') {
                 info.gender = spanTexts[i - 1];
             } else if (spanTexts[i] === 'Skype') {
@@ -181,7 +188,7 @@ const browseProfiles = async (page) => {
                 await page.goto(profileLink, Constants.PAGE_LOADING_STYLE);
                 // await sleep(3000);
 
-                let spanTexts = await page.$$eval('span', (spans) => spans.map((span) => span.textContent).filter((text) => text));
+                let spanTexts = await page.$$eval('span', (spans) => spans.map((span) => span.textContent));
                 spanInfos = spanInfos.concat(spanTexts);
 
                 for (let f = 0; f < profileFeatures.length; f++) {
@@ -193,11 +200,11 @@ const browseProfiles = async (page) => {
                     }
                     // await sleep(3000);
 
-                    spanTexts = await page.$$eval('span', (spans) => spans.map((span) => span.textContent).filter((text) => text));
+                    spanTexts = await page.$$eval('span', (spans) => spans.map((span) => span.textContent));
                     spanInfos = spanInfos.concat(spanTexts);
                 }
 
-                const h1Texts = await page.$$eval('h1', (h1Tags) => h1Tags.map((h1) => h1.textContent).filter((text) => text));
+                const h1Texts = await page.$$eval('h1', (h1Tags) => h1Tags.map((h1) => h1.textContent));
                 h1Infos = h1Infos.concat(h1Texts);
 
                 spanInfos = await immediateSecondOcurranceWordRemove(spanInfos);
